@@ -8,14 +8,72 @@ class SNAKE:
         self.direction = Vector2(1,0)
         self.new_block = False
         
+        self.head_up = pygame.image.load('snake_game/gráficos/head_up.png').convert_alpha()
+        self.head_down = pygame.image.load('snake_game/gráficos/head_down.png').convert_alpha()
+        self.head_right = pygame.image.load('snake_game/gráficos/head_right.png').convert_alpha()
+        self.head_left = pygame.image.load('snake_game/gráficos/head_left.png').convert_alpha()
+        
+        self.tail_up = pygame.image.load('snake_game/gráficos/tail_up.png').convert_alpha()
+        self.tail_down = pygame.image.load('snake_game/gráficos/tail_down.png').convert_alpha()
+        self.tail_rigth = pygame.image.load('snake_game/gráficos/tail_right.png').convert_alpha()
+        self.tail_left = pygame.image.load('snake_game/gráficos/tail_left.png').convert_alpha()
+        
+        self.body_vertical = pygame.image.load('snake_game/gráficos/body_vertical.png').convert_alpha()
+        self.body_orizontal = pygame.image.load('snake_game/gráficos/body_horizontal.png').convert_alpha()
+        
+        self.body_tr = pygame.image.load('snake_game/gráficos/body_topright.png').convert_alpha()
+        self.body_tl = pygame.image.load('snake_game/gráficos/body_topleft.png').convert_alpha()
+        self.body_br = pygame.image.load('snake_game/gráficos/body_bottomright.png').convert_alpha()
+        self.body_bl = pygame.image.load('snake_game/gráficos/body_bottomleft.png').convert_alpha()
+        
+        
     # Desenhar a cobra    
     def draw_snake(self):
-        for block in self.body:
+        self.update_head_graphics()
+        self.update_tail_graphics()
+        
+        for index, block in enumerate(self.body):
             x_pos = int(block.x * cell_size)
             y_pos = int(block.y * cell_size)
             block_rect = pygame.Rect(x_pos, y_pos, cell_size, cell_size)
-            pygame.draw.rect(screen,(183,111,122), block_rect)
+        
+        # Direção que o rosto da cobra está indo
+            if index == 0:
+                screen.blit(self.head, block_rect)
+            elif index == len(self.body) - 1:
+                screen.blit(self.tail, block_rect)
+            else:
+                previous_block = self.body[index + 1] - block
+                next_block = self.body[index - 1] - block
+                if previous_block.x == next_block.x:
+                    screen.blit(self.body_vertical, block_rect)
+                elif previous_block.y == next_block.y:
+                    screen.blit(self.body_orizontal, block_rect)
+                else:
+                    if previous_block.x == -1 and next_block.y == -1 or previous_block.y == -1 and next_block.x == -1:
+                        screen.blit(self.body_tl, block_rect)
+                    elif previous_block.x == -1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == -1:
+                        screen.blit(self.body_bl, block_rect)
+                    elif previous_block.x == 1 and next_block.y == -1 or previous_block.y == -1 and next_block.x == 1:
+                        screen.blit(self.body_tr, block_rect)
+                    elif previous_block.x == 1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == 1:
+                        screen.blit(self.body_br, block_rect)
     
+    def update_head_graphics(self):
+        head_relation = self.body[1] - self.body[0]
+        if head_relation == Vector2(1,0): self.head = self.head_left
+        elif head_relation == Vector2(-1,0): self.head = self.head_right
+        elif head_relation == Vector2(0,1): self.head = self.head_up
+        elif head_relation == Vector2(0,-1): self.head = self.head_down
+        
+    def update_tail_graphics(self):
+        tail_relation = self.body[-2] - self.body[-1]
+        if tail_relation == Vector2(1,0): self.tail = self.tail_left
+        elif tail_relation == Vector2(-1,0): self.tail = self.tail_rigth
+        elif tail_relation == Vector2(0,1): self.tail = self.tail_up
+        elif tail_relation == Vector2(0,-1): self.tail = self.tail_down       
+        
+       
     def move_snake(self):
         if self.new_block == True:
             body_copy = self.body[:]
@@ -87,7 +145,7 @@ cell_size = 40
 cell_number = 18
 screen = pygame.display.set_mode((cell_number * cell_size,cell_number * cell_size)) #Tamanho da tela
 clock = pygame.time.Clock()
-apple = pygame.image.load('snake_game/recursos/apple.jpg').convert_alpha()
+apple = pygame.image.load('snake_game/gráficos/apple.png').convert_alpha()
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE,150)
