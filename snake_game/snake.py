@@ -5,7 +5,7 @@ from pygame.math import Vector2
 class SNAKE:
     def __init__(self):
         self.body = [Vector2(5,10), Vector2(4,10), Vector2(3,10)] # Blocos iniciais, corpo da cobra
-        self.direction = Vector2(1,0)
+        self.direction = Vector2(0,0)
         self.new_block = False
         
         self.head_up = pygame.image.load('snake_game/gráficos/head_up.png').convert_alpha()
@@ -25,6 +25,7 @@ class SNAKE:
         self.body_tl = pygame.image.load('snake_game/gráficos/body_topleft.png').convert_alpha()
         self.body_br = pygame.image.load('snake_game/gráficos/body_bottomright.png').convert_alpha()
         self.body_bl = pygame.image.load('snake_game/gráficos/body_bottomleft.png').convert_alpha()
+        self.crunch_sound = pygame.mixer.Sound('snake_game/som/plastic-crunch-83779.mp3')
         
         
     # Desenhar a cobra    
@@ -88,6 +89,13 @@ class SNAKE:
     def add_block(self):
         self.new_block = True
         
+    def play_crunch_sound(self):
+        self.crunch_sound.play()
+    
+    def reset(self):
+        self.body = [Vector2(5,10), Vector2(4,10),Vector2(3,10)]
+        self.direction = Vector2(0,0)
+        
 # Fruta do jogo
 class FRUIT:
     def __init__(self):
@@ -115,8 +123,10 @@ class MAIN:
         self.check_fail()
         
     def draw_elements(self):
+        self.draw_grass()
         self.fruit.draw_fruit()
         self.snake.draw_snake()
+        self.draw_score()
         
     def check_collision(self):
         if self.fruit.pos == self.snake.body[0]:
@@ -125,6 +135,14 @@ class MAIN:
             
             # adicionar novo bloco a cobra
             self.snake.add_block()
+            
+            # Som de colisão com a maçã
+            self.snake.play_crunch_sound()
+            
+        for block in self.snake.body[1:]:
+            if block == self.fruit.pos:
+                self.fruit.randomize()
+            
             
     def check_fail(self):
         #Verificar se a cobra está fora da tela
@@ -137,20 +155,81 @@ class MAIN:
                 self.game_over()
                 
     def game_over(self):
-        pygame.quit()
-        sys.exit()
+        self.snake.reset()
     
+    def draw_grass(self):
+        grass_color = (167,209,61)
+        for row in range(cell_number):
+            if row % 2 == 0:
+                for col in range(cell_number):
+                    if col % 2 == 0:
+                        grass_rect = pygame.Rect(col * cell_size,row * cell_size,cell_size, cell_size)
+                        pygame.draw.rect(screen,grass_color, grass_rect)
+            else:
+                for col in range(cell_number):
+                    if col % 2 != 0:
+                        grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
+                        pygame.draw.rect(screen, grass_color, grass_rect)
+    
+    def draw_score(self):
+        score_text = str(len(self.snake.body) - 3)
+        score_surface = game_font.render(score_text,True,(56,74,12))
+        score_x = int(cell_size * cell_number - 60)
+        score_y = int(cell_size * cell_number - 40)
+        score_rect = score_surface.get_rect(center = (score_x, score_y))
+        apple_rect = apple.get_rect(midright = (score_rect.left, score_rect.centery))
+        bg_rect = pygame.Rect(apple_rect.left,apple_rect.top,apple_rect.width + score_rect.width + 6,apple_rect.height)
+        
+        pygame.draw.rect(screen,(167,209,61),bg_rect)
+        screen.blit(score_surface, score_rect)
+        screen.blit(apple, apple_rect)
+        pygame.draw.rect(screen,(167,209,61),bg_rect,2)
+
+# Função para mostrar o menu
+def show_menu():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return  # Retorna para sair do loop e iniciar o jogo
+
+        screen.fill((175, 215, 70))
+        # Desenhar o menu
+        menu_text = game_font.render("Snake Game", True, (255, 255, 255))
+        menu_rect = menu_text.get_rect(center=(cell_number * cell_size // 2, cell_number * cell_size // 2 - 50))
+        screen.blit(menu_text, menu_rect)
+
+        start_text = game_font.render("Pressione Enter para iniciar", True, (255, 255, 255))
+        start_rect = start_text.get_rect(center=(cell_number * cell_size // 2, cell_number * cell_size // 2))
+        screen.blit(start_text, start_rect)
+
+        instruction_text = game_font.render("Instruções: Use as setas para mover", True, (255, 255, 255))
+        instruction_rect = instruction_text.get_rect(center=(cell_number * cell_size // 2, cell_number * cell_size // 2 + 50))
+        screen.blit(instruction_text, instruction_rect)
+
+        pygame.display.update()
+        clock.tick(60)
+
+pygame.mixer.pre_init(44100,-16,2,512)   
 pygame.init()
 cell_size = 40
 cell_number = 18
 screen = pygame.display.set_mode((cell_number * cell_size,cell_number * cell_size)) #Tamanho da tela
 clock = pygame.time.Clock()
 apple = pygame.image.load('snake_game/gráficos/apple.png').convert_alpha()
+game_font = pygame.font.Font('snake_game/fonte/PoetsenOne-Regular.ttf', 25)
+
 
 SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE,150)
 
 main_game = MAIN()
+
+# Mostrar o menu antes de iniciar o jogo
+show_menu()
 
 
 #Mater o loop do jogo em execução
