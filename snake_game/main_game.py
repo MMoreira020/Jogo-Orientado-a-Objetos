@@ -1,9 +1,11 @@
 from snake import SNAKE
+from snake import MAIN
 import pygame
 
 class MAIN:
     def __init__(self, cell_size, cell_number, screen, apple, heart, game_font):
         self.snake = SNAKE(cell_size)  # Passando cell_size para o construtor de SNAKE
+        self.main = MAIN(cell_size)
         self.cell_size = cell_size
         self.cell_number = cell_number
         self.screen = screen
