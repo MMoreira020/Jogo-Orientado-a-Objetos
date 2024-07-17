@@ -47,6 +47,8 @@ class MAIN:
                 self.snake.lives -= 1 # Reduz uma vida
                 if self.snake.lives == 0:
                     self.game_over(screen, game_font, cell_number, clock) # Encerra o jogo
+                else:
+                    self.snake.reset()
 
     def game_over(self, screen, game_font, cell_number, clock): # Indica que o jogo chegou ao fim quando as condições de falha são atendidas
         self.screen = screen
@@ -113,4 +115,4 @@ class MAIN:
             screen.blit(retry_text, retry_rect)
 
             pygame.display.update() # Atualiza a tela para exibir mudanças feitas no loop
-            clock.tick(60) # Limita a taxa de quadros por segundo a 60fps
+            clock.tick(80) # Limita a taxa de quadros por segundo a 60fps

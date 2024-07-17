@@ -70,4 +70,4 @@ while True: # Executa até que o jogo seja encerrado
     screen.fill((175, 215, 70))
     main_game.draw_elements(screen, apple, game_font)
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(80)
